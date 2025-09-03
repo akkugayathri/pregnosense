@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Data Collection System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .fade-out {
+            animation: fadeOut 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-lg border-b-4 border-blue-500">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-heartbeat text-3xl text-red-500"></i>
+                    <h1 class="text-2xl font-bold text-gray-800">PregnoSense</h1>
+                </div>
+                <div class="flex space-x-4">
+                    <button id="homeBtn" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition duration-200 flex items-center space-x-2">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </button>
+                    <button id="addPatientBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition duration-200 flex items-center space-x-2">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Add Patient</span>
+                    </button>
+                    <button id="exportBtn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition duration-200 flex items-center space-x-2">
+                        <i class="fas fa-download"></i>
+                        <span>Export Data</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+        <!-- Dashboard/Home View -->
+        <div id="dashboard" class="bg-white rounded-xl shadow-xl p-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center space-x-2">
+                <i class="fas fa-tachometer-alt text-blue-600"></i>
+                <span>Dashboard</span>
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-gradient-to-r from-blue-100 to-blue-200 p-6 rounded-lg border-l-4 border-blue-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-blue-800">Total Patients</p>
+                            <h3 class="text-3xl font-bold text-blue-900" id="totalPatients">0</h3>
+                        </div>
+                        <i class="fas fa-users text-3xl text-blue-700 opacity-50"></i>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-green-100 to-green-200 p-6 rounded-lg border-l-4 border-green-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-green-800">Vitals Records</p>
+                            <h3 class="text-3xl font-bold text-green-900" id="totalVitals">0</h3>
+                        </div>
+                        <i class="fas fa-heartbeat text-3xl text-green-700 opacity-50"></i>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-purple-100 to-purple-200 p-6 rounded-lg border-l-4 border-purple-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-purple-800">Doctors</p>
+                            <h3 class="text-3xl font-bold text-purple-900">5</h3>
+                        </div>
+                        <i class="fas fa-user-md text-3xl text-purple-700 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-gray-50 p-6 rounded-lg">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button id="gotoPatientsBtn" class="bg-white border border-gray-300 p-4 rounded-lg hover:bg-blue-50 transition duration-200 flex items-center space-x-3">
+                        <div class="bg-blue-100 p-3 rounded-full">
+                            <i class="fas fa-users text-blue-600"></i>
+                        </div>
+                        <div class="text-left">
+                            <p class="font-medium text-gray-800">View All Patients</p>
+                            <p class="text-sm text-gray-600">Browse and manage patient records</p>
+                        </div>
+                    </button>
+                    
+                    <button id="gotoAddPatientBtn" class="bg-white border border-gray-300 p-4 rounded-lg hover:bg-blue-50 transition duration-200 flex items-center space-x-3">
+                        <div class="bg-green-100 p-3 rounded-full">
+                            <i class="fas fa-user-plus text-green-600"></i>
+                        </div>
+                        <div class="text-left">
+                            <p class="font-medium text-gray-800">Add New Patient</p>
+                            <p class="text-sm text-gray-600">Register a new patient</p>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Patient Registration Form -->
+        <div id="patientForm" class="bg-white rounded-xl shadow-xl p-8 mb-8 hidden">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 flex items-center space-x-2">
+                    <i class="fas fa-user-edit text-blue-600"></i>
+                    <span>Patient Registration</span>
+                </h2>
+                <div class="flex space-x-2">
+                    <button id="backToDashboardFromForm" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-200 flex items-center space-x-2">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back</span>
+                    </button>
+                    <button id="closeFormBtn" class="text-gray-500 hover:text-gray-700 text-2xl">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <form id="patientRegistration" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Personal Information -->
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-700 border-b pb-2">Personal Information</h3>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                            <input type="text" name="name" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Date of Birth *</label>
+                            <input type="date" name="dob" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Contact Number *</label>
+                            <input type="tel" name="contact" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                            <textarea name="address" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Medical Information -->
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-700 border-b pb-2">Medical Information</h3>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Assigned Doctor *</label>
+                            <select name="doctor" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">Select Doctor</option>
+                                <option value="Dr. Sarah Johnson">Dr. Sarah Johnson</option>
+                                <option value="Dr. Michael Chen">Dr. Michael Chen</option>
+                                <option value="Dr. Emily Davis">Dr. Emily Davis</option>
+                                <option value="Dr. Robert Wilson">Dr. Robert Wilson</option>
+                                <option value="Dr. Lisa Anderson">Dr. Lisa Anderson</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Past Medical History</label>
+                            <textarea name="medicalHistory" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Previous conditions, surgeries, etc."></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Current Medications</label>
+                            <textarea name="medications" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="List current medications and dosages"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Allergies</label>
+                            <textarea name="allergies" rows="2" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Food, drug, or environmental allergies"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Emergency Contact & Additional Info -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-700 border-b pb-2">Emergency Contact</h3>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Emergency Contact Name *</label>
+                            <input type="text" name="emergencyName" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Emergency Contact Phone *</label>
+                            <input type="tel" name="emergencyPhone" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-700 border-b pb-2">Additional Information</h3>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Pregnancy Details</label>
+                            <textarea name="pregnancyDetails" rows="2" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="If applicable, pregnancy status, due date, etc."></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                            <textarea name="notes" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Additional notes or observations"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Consent -->
+                <div class="bg-gray-50 p-6 rounded-lg">
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" name="consent" id="consent" required class="mt-1 h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                        <label for="consent" class="text-sm text-gray-700">
+                            I consent to the collection, storage, and processing of my personal and medical information for healthcare purposes. I understand that this information will be kept confidential and used only for medical care.
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-4 pt-6">
+                    <button type="button" id="cancelBtn" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-200">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 flex items-center space-x-2">
+                        <i class="fas fa-save"></i>
+                        <span>Save Patient</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Patients List -->
+        <div id="patientsList" class="bg-white rounded-xl shadow-xl p-8 hidden">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 flex items-center space-x-2">
+                    <i class="fas fa-users text-blue-600"></i>
+                    <span>Patients List</span>
+                </h2>
+                <button id="backToDashboardFromList" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-200 flex items-center space-x-2">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back</span>
+                </button>
+            </div>
+            
+            <div class="mb-4">
+                <input type="text" id="searchInput" placeholder="Search patients..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
+
+            <div id="patientsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Patient cards will be inserted here -->
+            </div>
+
+            <div id="noPatientsMessage" class="text-center py-12 hidden">
+                <i class="fas fa-user-md text-6xl text-gray-300 mb-4"></i>
+                <p class="text-gray-500 text-lg">No patients registered yet.</p>
+                <p class="text-gray-400">Click "Add Patient" to register your first patient.</p>
+            </div>
+        </div>
+
+        <!-- Vitals Form -->
+        <div id="vitalsForm" class="bg-white rounded-xl shadow-xl p-8 hidden">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 flex items-center space-x-2">
+                    <i class="fas fa-heartbeat text-red-600"></i>
+                    <span id="vitalsPatientName">Patient Vitals</span>
+                </h2>
+                <div class="flex space-x-2">
+                    <button id="backToPatientsFromVitals" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-200 flex items-center space-x-2">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back</span>
+                    </button>
+                    <button id="closeVitalsBtn" class="text-gray-500 hover:text-gray-700 text-2xl">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <form id="vitalsRegistration" class="space-y-6">
+                <input type="hidden" id="vitalsPatientId" name="patientId">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-700 border-b pb-2">Vital Signs</h3>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Blood Pressure (mmHg) *</label>
+                            <div class="flex space-x-2">
+                                <input type="number" name="systolic" placeholder="Systolic" required class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <span class="text-2xl text-gray-500 self-center">/</span>
+                                <input type="number" name="diastolic" placeholder="Diastolic" required class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Blood Sugar (mg/dL) *</label>
+                            <input type="number" name="sugar" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Pulse Rate (bpm) *</label>
+                            <input type="number" name="pulse" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-700 border-b pb-2">Recording Details</h3>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Date *</label>
+                            <input type="date" name="date" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Time *</label>
+                            <input type="time" name="time" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Additional Notes</label>
+                            <textarea name="vitalsNotes" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Any observations or additional notes"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-4 pt-6">
+                    <button type="button" id="cancelVitalsBtn" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-200">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200 flex items-center space-x-2">
+                        <i class="fas fa-save"></i>
+                        <span>Save Vitals</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Export Modal -->
+    <div id="exportModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-xl p-8 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold text-gray-800 mb-6">Export Data</h3>
+            <div class="space-y-4">
+                <button id="exportCSVBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg transition duration-200 flex items-center justify-center space-x-2">
+                    <i class="fas fa-file-csv"></i>
+                    <span>Export as CSV</span>
+                </button>
+                <button id="exportExcelBtn" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg transition duration-200 flex items-center justify-center space-x-2">
+                    <i class="fas fa-file-excel"></i>
+                    <span>Export as Excel</span>
+                </button>
+            </div>
+            <div class="flex justify-end mt-6">
+                <button id="closeExportModal" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-200">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-xl p-8 max-w-md w-full mx-4">
+            <div class="text-center mb-6">
+                <i class="fas fa-exclamation-triangle text-4xl text-yellow-500 mb-4"></i>
+                <h3 class="text-xl font-bold text-gray-800">Confirm Deletion</h3>
+                <p class="text-gray-600 mt-2">Are you sure you want to delete this patient record? This action cannot be undone.</p>
+            </div>
+            <div class="flex justify-center space-x-4">
+                <button id="cancelDeleteBtn" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-200">
+                    Cancel
+                </button>
+                <button id="confirmDeleteBtn" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200">
+                    Delete Patient
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class PatientManagementSystem {
+            constructor() {
+                this.patients = this.loadData('patients') || [];
+                this.vitals = this.loadData('vitals') || [];
+                this.currentView = 'dashboard'; // Track current view
+                this.patientToDelete = null; // Track patient to be deleted
+                this.init();
+            }
+
+            init() {
+                this.bindEvents();
+                this.renderPatients();
+                this.setCurrentDateTime();
+                this.updateDashboardStats();
+                this.showView('dashboard');
+            }
+
+            // Use in-memory storage instead of localStorage
+            loadData(key) {
+                return window[`_${key}_data`] || [];
+            }
+
+            saveData(key, data) {
+                window[`_${key}_data`] = data;
+            }
+
+            bindEvents() {
+                // Navigation events
+                document.getElementById('homeBtn').addEventListener('click', () => this.showView('dashboard'));
+                document.getElementById('gotoPatientsBtn').addEventListener('click', () => this.showView('patientsList'));
+                document.getElementById('gotoAddPatientBtn').addEventListener('click', () => this.showPatientForm());
+                document.getElementById('backToDashboardFromForm').addEventListener('click', () => this.showView('dashboard'));
+                document.getElementById('backToDashboardFromList').addEventListener('click', () => this.showView('dashboard'));
+                document.getElementById('backToPatientsFromVitals').addEventListener('click', () => this.showView('patientsList'));
+
+                // Patient form events
+                document.getElementById('addPatientBtn').addEventListener('click', () => this.showPatientForm());
+                document.getElementById('closeFormBtn').addEventListener('click', () => this.showView('patientsList'));
+                document.getElementById('cancelBtn').addEventListener('click', () => this.showView('patientsList'));
+                document.getElementById('patientRegistration').addEventListener('submit', (e) => this.handlePatientSubmit(e));
+
+                // Vitals form events
+                document.getElementById('closeVitalsBtn').addEventListener('click', () => this.showView('patientsList'));
+                document.getElementById('cancelVitalsBtn').addEventListener('click', () => this.showView('patientsList'));
+                document.getElementById('vitalsRegistration').addEventListener('submit', (e) => this.handleVitalsSubmit(e));
+
+                // Export events
+                document.getElementById('exportBtn').addEventListener('click', () => this.showExportModal());
+                document.getElementById('closeExportModal').addEventListener('click', () => this.hideExportModal());
+                document.getElementById('exportCSVBtn').addEventListener('click', () => this.exportCSV());
+                document.getElementById('exportExcelBtn').addEventListener('click', () => this.exportExcel());
+
+                // Search functionality
+                document.getElementById('searchInput').addEventListener('input', (e) => this.searchPatients(e.target.value));
+
+                // Delete functionality
+                document.getElementById('cancelDeleteBtn').addEventListener('click', () => this.hideDeleteModal());
+                document.getElementById('confirmDeleteBtn').addEventListener('click', () => this.confirmDeletePatient());
+            }
+
+            showView(viewName) {
+                // Hide all views first
+                document.getElementById('dashboard').classList.add('hidden');
+                document.getElementById('patientForm').classList.add('hidden');
+                document.getElementById('patientsList').classList.add('hidden');
+                document.getElementById('vitalsForm').classList.add('hidden');
+                
+                // Show the requested view
+                if (viewName === 'dashboard') {
+                    document.getElementById('dashboard').classList.remove('hidden');
+                    this.updateDashboardStats();
+                    this.currentView = 'dashboard';
+                } else if (viewName === 'patientForm') {
+                    document.getElementById('patientForm').classList.remove('hidden');
+                    this.currentView = 'patientForm';
+                } else if (viewName === 'patientsList') {
+                    document.getElementById('patientsList').classList.remove('hidden');
+                    this.renderPatients();
+                    this.currentView = 'patientsList';
+                } else if (viewName === 'vitalsForm') {
+                    document.getElementById('vitalsForm').classList.remove('hidden');
+                    this.currentView = 'vitalsForm';
+                }
+            }
+
+            showPatientForm() {
+                // Clear the form before showing it
+                document.getElementById('patientRegistration').reset();
+                this.showView('patientForm');
+            }
+
+            showVitalsForm(patient) {
+                document.getElementById('vitalsPatientName').textContent = `Vitals for ${patient.name}`;
+                document.getElementById('vitalsPatientId').value = patient.id;
+                this.setCurrentDateTime();
+                this.showView('vitalsForm');
+            }
+
+            setCurrentDateTime() {
+                const now = new Date();
+                const dateInput = document.querySelector('input[name="date"]');
+                const timeInput = document.querySelector('input[name="time"]');
+                
+                if (dateInput) dateInput.value = now.toISOString().split('T')[0];
+                if (timeInput) timeInput.value = now.toTimeString().slice(0, 5);
+            }
+
+            updateDashboardStats() {
+                document.getElementById('totalPatients').textContent = this.patients.length;
+                document.getElementById('totalVitals').textContent = this.vitals.length;
+            }
+
+            handlePatientSubmit(e) {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const patient = {
+                    id: Date.now(),
+                    name: formData.get('name'),
+                    dob: formData.get('dob'),
+                    contact: formData.get('contact'),
+                    address: formData.get('address'),
+                    doctor: formData.get('doctor'),
+                    medicalHistory: formData.get('medicalHistory'),
+                    medications: formData.get('medications'),
+                    allergies: formData.get('allergies'),
+                    emergencyName: formData.get('emergencyName'),
+                    emergencyPhone: formData.get('emergencyPhone'),
+                    pregnancyDetails: formData.get('pregnancyDetails'),
+                    notes: formData.get('notes'),
+                    consent: formData.get('consent') === 'on',
+                    registrationDate: new Date().toISOString()
+                };
+
+                this.patients.push(patient);
+                this.saveData('patients', this.patients);
+                this.renderPatients();
+                this.showView('patientsList');
+                this.showSuccessMessage('Patient registered successfully!');
+                this.updateDashboardStats();
+            }
+
+            handleVitalsSubmit(e) {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const vital = {
+                    id: Date.now(),
+                    patientId: parseInt(formData.get('patientId')),
+                    systolic: formData.get('systolic'),
+                    diastolic: formData.get('diastolic'),
+                    sugar: formData.get('sugar'),
+                    pulse: formData.get('pulse'),
+                    date: formData.get('date'),
+                    time: formData.get('time'),
+                    vitalsNotes: formData.get('vitalsNotes'),
+                    recordedDate: new Date().toISOString()
+                };
+
+                this.vitals.push(vital);
+                this.saveData('vitals', this.vitals);
+                this.showView('patientsList');
+                this.showSuccessMessage('Vitals recorded successfully!');
+                this.updateDashboardStats();
+            }
+
+            renderPatients() {
+                const container = document.getElementById('patientsGrid');
+                const noMessage = document.getElementById('noPatientsMessage');
+
+                if (this.patients.length === 0) {
+                    container.style.display = 'none';
+                    noMessage.classList.remove('hidden');
+                    return;
+                }
+
+                container.style.display = 'grid';
+                noMessage.classList.add('hidden');
+
+                container.innerHTML = this.patients.map(patient => `
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border-l-4 border-blue-500 hover:shadow-lg transition duration-200 slide-in">
+                        <div class="flex items-start justify-between mb-4">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800">${patient.name}</h3>
+                                <p class="text-sm text-gray-600">DOB: ${new Date(patient.dob).toLocaleDateString()}</p>
+                                <p class="text-sm text-gray-600">Doctor: ${patient.doctor}</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-xs text-gray-500">ID: ${patient.id}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2 text-sm text-gray-600">
+                            <p><i class="fas fa-phone w-4"></i> ${patient.contact}</p>
+                            <p><i class="fas fa-user-friends w-4"></i> ${patient.emergencyName} (${patient.emergencyPhone})</p>
+                            ${patient.allergies ? `<p><i class="fas fa-exclamation-triangle w-4 text-yellow-500"></i> Allergies: ${patient.allergies}</p>` : ''}
+                        </div>
+                        
+                        <div class="mt-4 flex space-x-2">
+                            <button onclick="patientSystem.showVitalsForm(${JSON.stringify(patient).replace(/"/g, '&quot;')})" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded text-sm transition duration-200 flex items-center justify-center space-x-1">
+                                <i class="fas fa-heartbeat"></i>
+                                <span>Record Vitals</span>
+                            </button>
+                            <button onclick="patientSystem.viewPatientHistory(${patient.id})" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-3 rounded text-sm transition duration-200 flex items-center justify-center space-x-1">
+                                <i class="fas fa-history"></i>
+                                <span>History</span>
+                            </button>
+                            <button onclick="patientSystem.showDeleteModal(${patient.id})" class="bg-red-500 hover:bg-red-600 text-white py-2 px-3 rounded text-sm transition duration-200 flex items-center justify-center">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            searchPatients(query) {
+                const filtered = this.patients.filter(patient => 
+                    patient.name.toLowerCase().includes(query.toLowerCase()) ||
+                    patient.contact.includes(query) ||
+                    patient.doctor.toLowerCase().includes(query.toLowerCase())
+                );
+
+                const container = document.getElementById('patientsGrid');
+                const noMessage = document.getElementById('noPatientsMessage');
+
+                if (filtered.length === 0) {
+                    container.style.display = 'none';
+                    noMessage.classList.remove('hidden');
+                    noMessage.innerHTML = `
+                        <i class="fas fa-search text-6xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500 text-lg">No patients found matching "${query}"</p>
+                    `;
+                    return;
+                }
+
+                container.style.display = 'grid';
+                noMessage.classList.add('hidden');
+
+                container.innerHTML = filtered.map(patient => `
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border-l-4 border-blue-500 hover:shadow-lg transition duration-200">
+                        <div class="flex items-start justify-between mb-4">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800">${patient.name}</h3>
+                                <p class="text-sm text-gray-600">DOB: ${new Date(patient.dob).toLocaleDateString()}</p>
+                                <p class="text-sm text-gray-600">Doctor: ${patient.doctor}</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-xs text-gray-500">ID: ${patient.id}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2 text-sm text-gray-600">
+                            <p><i class="fas fa-phone w-4"></i> ${patient.contact}</p>
+                            <p><i class="fas fa-user-friends w-4"></i> ${patient.emergencyName} (${patient.emergencyPhone})</p>
+                            ${patient.allergies ? `<p><i class="fas fa-exclamation-triangle w-4 text-yellow-500"></i> Allergies: ${patient.allergies}</p>` : ''}
+                        </div>
+                        
+                        <div class="mt-4 flex space-x-2">
+                            <button onclick="patientSystem.showVitalsForm(${JSON.stringify(patient).replace(/"/g, '&quot;')})" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded text-sm transition duration-200 flex items-center justify-center space-x-1">
+                                <i class="fas fa-heartbeat"></i>
+                                <span>Record Vitals</span>
+                            </button>
+                            <button onclick="patientSystem.viewPatientHistory(${patient.id})" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-3 rounded text-sm transition duration-200 flex items-center justify-center space-x-1">
+                                <i class="fas fa-history"></i>
+                                <span>History</span>
+                            </button>
+                            <button onclick="patientSystem.showDeleteModal(${patient.id})" class="bg-red-500 hover:bg-red-600 text-white py-2 px-3 rounded text-sm transition duration-200 flex items-center justify-center">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            viewPatientHistory(patientId) {
+                const patient = this.patients.find(p => p.id === patientId);
+                const patientVitals = this.vitals.filter(v => v.patientId === patientId);
+                
+                let historyHTML = `
+                    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 fade-in">
+                        <div class="bg-white rounded-xl shadow-xl p-8 max-w-4xl w-full mx-4 max-h-96 overflow-y-auto">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-xl font-bold text-gray-800">${patient.name} - Medical History</h3>
+                                <button onclick="this.parentElement.parentElement.parentElement.remove()" class="text-gray-500 hover:text-gray-700 text-2xl">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div class="space-y-2">
+                                    <p><strong>DOB:</strong> ${new Date(patient.dob).toLocaleDateString()}</p>
+                                    <p><strong>Contact:</strong> ${patient.contact}</p>
+                                    <p><strong>Doctor:</strong> ${patient.doctor}</p>
+                                    <p><strong>Emergency Contact:</strong> ${patient.emergencyName} (${patient.emergencyPhone})</p>
+                                </div>
+                                <div class="space-y-2">
+                                    ${patient.medicalHistory ? `<p><strong>Medical History:</strong> ${patient.medicalHistory}</p>` : ''}
+                                    ${patient.medications ? `<p><strong>Medications:</strong> ${patient.medications}</p>` : ''}
+                                    ${patient.allergies ? `<p><strong>Allergies:</strong> <span class="text-red-600">${patient.allergies}</span></p>` : ''}
+                                </div>
+                            </div>
+                            
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4">Vitals History</h4>
+                            ${patientVitals.length > 0 ? `
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-2 text-left">Date</th>
+                                                <th class="px-4 py-2 text-left">Time</th>
+                                                <th class="px-4 py-2 text-left">BP</th>
+                                                <th class="px-4 py-2 text-left">Sugar</th>
+                                                <th class="px-4 py-2 text-left">Pulse</th>
+                                                <th class="px-4 py-2 text-left">Notes</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${patientVitals.map(vital => `
+                                                <tr class="border-b">
+                                                    <td class="px-4 py-2">${new Date(vital.date).toLocaleDateString()}</td>
+                                                    <td class="px-4 py-2">${vital.time}</td>
+                                                    <td class="px-4 py-2">${vital.systolic}/${vital.diastolic}</td>
+                                                    <td class="px-4 py-2">${vital.sugar} mg/dL</td>
+                                                    <td class="px-4 py-2">${vital.pulse} bpm</td>
+                                                    <td class="px-4 py-2">${vital.vitalsNotes || '-'}</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ` : '<p class="text-gray-500">No vitals recorded yet.</p>'}
+                        </div>
+                    </div>
+                `;
+                
+                document.body.insertAdjacentHTML('beforeend', historyHTML);
+            }
+
+            showExportModal() {
+                document.getElementById('exportModal').classList.remove('hidden');
+            }
+
+            hideExportModal() {
+                document.getElementById('exportModal').classList.add('hidden');
+            }
+
+            showDeleteModal(patientId) {
+                this.patientToDelete = patientId;
+                document.getElementById('deleteModal').classList.remove('hidden');
+            }
+
+            hideDeleteModal() {
+                this.patientToDelete = null;
+                document.getElementById('deleteModal').classList.add('hidden');
+            }
+
+            confirmDeletePatient() {
+                if (this.patientToDelete) {
+                    // Remove patient
+                    this.patients = this.patients.filter(p => p.id !== this.patientToDelete);
+                    this.saveData('patients', this.patients);
+                    
+                    // Remove associated vitals
+                    this.vitals = this.vitals.filter(v => v.patientId !== this.patientToDelete);
+                    this.saveData('vitals', this.vitals);
+                    
+                    this.renderPatients();
+                    this.hideDeleteModal();
+                    this.showSuccessMessage('Patient record deleted successfully!');
+                    this.updateDashboardStats();
+                }
+            }
+
+            exportCSV() {
+                const csv = this.convertToCSV();
+                this.downloadFile(csv, 'patient_data.csv', 'text/csv');
+                this.hideExportModal();
+                this.showSuccessMessage('Data exported to CSV successfully!');
+            }
+
+            exportExcel() {
+                const wb = XLSX.utils.book_new();
+                
+                // Patients sheet with vitals combined
+                const combinedData = [];
+                
+                this.patients.forEach(patient => {
+                    const patientVitals = this.vitals.filter(v => v.patientId === patient.id);
+                    
+                    if (patientVitals.length === 0) {
+                        // Patient with no vitals - one row
+                        combinedData.push({
+                            'Patient ID': patient.id,
+                            'Name': patient.name,
+                            'Date of Birth': patient.dob,
+                            'Contact': patient.contact,
+                            'Address': patient.address || '',
+                            'Doctor': patient.doctor,
+                            'Medical History': patient.medicalHistory || '',
+                            'Medications': patient.medications || '',
+                            'Allergies': patient.allergies || '',
+                            'Emergency Contact Name': patient.emergencyName,
+                            'Emergency Contact Phone': patient.emergencyPhone,
+                            'Pregnancy Details': patient.pregnancyDetails || '',
+                            'Notes': patient.notes || '',
+                            'Registration Date': new Date(patient.registrationDate).toLocaleString(),
+                            'Vital Date': '',
+                            'Vital Time': '',
+                            'Systolic BP': '',
+                            'Diastolic BP': '',
+                            'Blood Pressure': '',
+                            'Blood Sugar (mg/dL)': '',
+                            'Pulse Rate (bpm)': '',
+                            'Vital Notes': '',
+                            'Vital Recorded Date': ''
+                        });
+                    } else {
+                        // Patient with vitals - one row per vital
+                        patientVitals.forEach(vital => {
+                            combinedData.push({
+                                'Patient ID': patient.id,
+                                'Name': patient.name,
+                                'Date of Birth': patient.dob,
+                                'Contact': patient.contact,
+                                'Address': patient.address || '',
+                                'Doctor': patient.doctor,
+                                'Medical History': patient.medicalHistory || '',
+                                'Medications': patient.medications || '',
+                                'Allergies': patient.allergies || '',
+                                'Emergency Contact Name': patient.emergencyName,
+                                'Emergency Contact Phone': patient.emergencyPhone,
+                                'Pregnancy Details': patient.pregnancyDetails || '',
+                                'Notes': patient.notes || '',
+                                'Registration Date': new Date(patient.registrationDate).toLocaleString(),
+                                'Vital Date': vital.date,
+                                'Vital Time': vital.time,
+                                'Systolic BP': vital.systolic,
+                                'Diastolic BP': vital.diastolic,
+                                'Blood Pressure': `${vital.systolic}/${vital.diastolic}`,
+                                'Blood Sugar (mg/dL)': vital.sugar,
+                                'Pulse Rate (bpm)': vital.pulse,
+                                'Vital Notes': vital.vitalsNotes || '',
+                                'Vital Recorded Date': new Date(vital.recordedDate).toLocaleString()
+                            });
+                        });
+                    }
+                });
+                
+                const combinedWS = XLSX.utils.json_to_sheet(combinedData);
+                XLSX.utils.book_append_sheet(wb, combinedWS, 'Patient Data with Vitals');
+                
+                // Summary sheet
+                const summaryData = this.patients.map(patient => {
+                    const patientVitals = this.vitals.filter(v => v.patientId === patient.id);
+                    const latestVital = patientVitals.sort((a, b) => new Date(b.recordedDate) - new Date(a.recordedDate))[0];
+                    
+                    return {
+                        'Patient ID': patient.id,
+                        'Name': patient.name,
+                        'Age': this.calculateAge(patient.dob),
+                        'Doctor': patient.doctor,
+                        'Total Vital Records': patientVitals.length,
+                        'Latest BP': latestVital ? `${latestVital.systolic}/${latestVital.diastolic}` : 'No records',
+                        'Latest Sugar': latestVital ? `${latestVital.sugar} mg/dL` : 'No records',
+                        'Latest Pulse': latestVital ? `${latestVital.pulse} bpm` : 'No records',
+                        'Last Checkup': latestVital ? new Date(latestVital.recordedDate).toLocaleDateString() : 'Never',
+                        'Allergies': patient.allergies || 'None'
+                    };
+                });
+                
+                const summaryWS = XLSX.utils.json_to_sheet(summaryData);
+                XLSX.utils.book_append_sheet(wb, summaryWS, 'Patient Summary');
+                
+                XLSX.writeFile(wb, 'patient_data.xlsx');
+                this.hideExportModal();
+                this.showSuccessMessage('Data exported to Excel successfully!');
+            }
+
+            convertToCSV() {
+                const headers = [
+                    'Patient ID', 'Patient Name', 'DOB', 'Age', 'Contact', 'Address', 'Doctor',
+                    'Medical History', 'Medications', 'Allergies', 'Emergency Contact Name',
+                    'Emergency Contact Phone', 'Pregnancy Details', 'Notes', 'Registration Date',
+                    'Vital Date', 'Vital Time', 'Blood Pressure', 'Systolic BP', 'Diastolic BP', 
+                    'Blood Sugar (mg/dL)', 'Pulse Rate (bpm)', 'Vital Notes', 'Vital Recorded Date'
+                ];
+                
+                let csv = headers.join(',') + '\n';
+                
+                this.patients.forEach(patient => {
+                    const patientVitals = this.vitals.filter(v => v.patientId === patient.id);
+                    
+                    // Helper function to escape CSV values
+                    const escapeCSV = (value) => {
+                        if (value === null || value === undefined) return '';
+                        const str = String(value);
+                        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+                            return `"${str.replace(/"/g, '""')}"`;
+                        }
+                        return str;
+                    };
+                    
+                    if (patientVitals.length === 0) {
+                        // Patient with no vitals
+                        csv += [
+                            patient.id,
+                            escapeCSV(patient.name),
+                            patient.dob,
+                            this.calculateAge(patient.dob),
+                            patient.contact,
+                            escapeCSV(patient.address || ''),
+                            escapeCSV(patient.doctor),
+                            escapeCSV(patient.medicalHistory || ''),
+                            escapeCSV(patient.medications || ''),
+                            escapeCSV(patient.allergies || ''),
+                            escapeCSV(patient.emergencyName),
+                            patient.emergencyPhone,
+                            escapeCSV(patient.pregnancyDetails || ''),
+                            escapeCSV(patient.notes || ''),
+                            escapeCSV(new Date(patient.registrationDate).toLocaleString()),
+                            '', '', '', '', '', '', '', '', ''
+                        ].join(',') + '\n';
+                    } else {
+                        // Patient with vitals - one row per vital record
+                        patientVitals.forEach(vital => {
+                            csv += [
+                                patient.id,
+                                escapeCSV(patient.name),
+                                patient.dob,
+                                this.calculateAge(patient.dob),
+                                patient.contact,
+                                escapeCSV(patient.address || ''),
+                                escapeCSV(patient.doctor),
+                                escapeCSV(patient.medicalHistory || ''),
+                                escapeCSV(patient.medications || ''),
+                                escapeCSV(patient.allergies || ''),
+                                escapeCSV(patient.emergencyName),
+                            patient.emergencyPhone,
+                            escapeCSV(patient.pregnancyDetails || ''),
+                            escapeCSV(patient.notes || ''),
+                            escapeCSV(new Date(patient.registrationDate).toLocaleString()),
+                            vital.date,
+                            vital.time,
+                            `${vital.systolic}/${vital.diastolic}`,
+                            vital.systolic,
+                            vital.diastolic,
+                            vital.sugar,
+                            vital.pulse,
+                            escapeCSV(vital.vitalsNotes || ''),
+                            escapeCSV(new Date(vital.recordedDate).toLocaleString())
+                        ].join(',') + '\n';
+                    });
+                }
+            });
+            
+            return csv;
+        }
+
+        calculateAge(dob) {
+            const today = new Date();
+            const birthDate = new Date(dob);
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            
+            return age;
+        }
+
+        downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        showSuccessMessage(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 fade-in';
+            successDiv.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-check-circle"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(successDiv);
+            
+            setTimeout(() => {
+                successDiv.classList.add('fade-out');
+                setTimeout(() => {
+                    successDiv.remove();
+                }, 300);
+            }, 3000);
+        }
+    }
+
+    // Initialize the system
+    const patientSystem = new PatientManagementSystem();
+    </script>
+</body>
+</html>
