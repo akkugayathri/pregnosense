@@ -324,13 +324,18 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Blood Sugar (mg/dL) *</label>
-                            <input type="number" name="sugar" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Heart Rate (bpm) *</label>
+                            <input type="number" name="heartRate" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Pulse Rate (bpm) *</label>
-                            <input type="number" name="pulse" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Temperature (°F) *</label>
+                            <input type="number" name="temperature" step="0.1" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">SpO2 (%) *</label>
+                            <input type="number" name="spo2" min="0" max="100" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         </div>
                     </div>
 
@@ -501,16 +506,23 @@
             }
 
             showVitalsForm(patient) {
+                // Clear the vitals form completely before showing it
+                document.getElementById('vitalsRegistration').reset();
+                
+                // Set patient information
                 document.getElementById('vitalsPatientName').textContent = `Vitals for ${patient.name}`;
                 document.getElementById('vitalsPatientId').value = patient.id;
+                
+                // Set current date and time
                 this.setCurrentDateTime();
+                
                 this.showView('vitalsForm');
             }
 
             setCurrentDateTime() {
                 const now = new Date();
-                const dateInput = document.querySelector('input[name="date"]');
-                const timeInput = document.querySelector('input[name="time"]');
+                const dateInput = document.querySelector('#vitalsForm input[name="date"]');
+                const timeInput = document.querySelector('#vitalsForm input[name="time"]');
                 
                 if (dateInput) dateInput.value = now.toISOString().split('T')[0];
                 if (timeInput) timeInput.value = now.toTimeString().slice(0, 5);
@@ -558,8 +570,9 @@
                     patientId: parseInt(formData.get('patientId')),
                     systolic: formData.get('systolic'),
                     diastolic: formData.get('diastolic'),
-                    sugar: formData.get('sugar'),
-                    pulse: formData.get('pulse'),
+                    heartRate: formData.get('heartRate'),
+                    temperature: formData.get('temperature'),
+                    spo2: formData.get('spo2'),
                     date: formData.get('date'),
                     time: formData.get('time'),
                     vitalsNotes: formData.get('vitalsNotes'),
@@ -718,8 +731,9 @@
                                                 <th class="px-4 py-2 text-left">Date</th>
                                                 <th class="px-4 py-2 text-left">Time</th>
                                                 <th class="px-4 py-2 text-left">BP</th>
-                                                <th class="px-4 py-2 text-left">Sugar</th>
-                                                <th class="px-4 py-2 text-left">Pulse</th>
+                                                <th class="px-4 py-2 text-left">HR</th>
+                                                <th class="px-4 py-2 text-left">Temp</th>
+                                                <th class="px-4 py-2 text-left">SpO2</th>
                                                 <th class="px-4 py-2 text-left">Notes</th>
                                             </tr>
                                         </thead>
@@ -729,8 +743,9 @@
                                                     <td class="px-4 py-2">${new Date(vital.date).toLocaleDateString()}</td>
                                                     <td class="px-4 py-2">${vital.time}</td>
                                                     <td class="px-4 py-2">${vital.systolic}/${vital.diastolic}</td>
-                                                    <td class="px-4 py-2">${vital.sugar} mg/dL</td>
-                                                    <td class="px-4 py-2">${vital.pulse} bpm</td>
+                                                    <td class="px-4 py-2">${vital.heartRate} bpm</td>
+                                                    <td class="px-4 py-2">${vital.temperature} °F</td>
+                                                    <td class="px-4 py-2">${vital.spo2}%</td>
                                                     <td class="px-4 py-2">${vital.vitalsNotes || '-'}</td>
                                                 </tr>
                                             `).join('')}
@@ -818,8 +833,9 @@
                             'Systolic BP': '',
                             'Diastolic BP': '',
                             'Blood Pressure': '',
-                            'Blood Sugar (mg/dL)': '',
-                            'Pulse Rate (bpm)': '',
+                            'Heart Rate (bpm)': '',
+                            'Temperature (°F)': '',
+                            'SpO2 (%)': '',
                             'Vital Notes': '',
                             'Vital Recorded Date': ''
                         });
@@ -846,8 +862,9 @@
                                 'Systolic BP': vital.systolic,
                                 'Diastolic BP': vital.diastolic,
                                 'Blood Pressure': `${vital.systolic}/${vital.diastolic}`,
-                                'Blood Sugar (mg/dL)': vital.sugar,
-                                'Pulse Rate (bpm)': vital.pulse,
+                                'Heart Rate (bpm)': vital.heartRate,
+                                'Temperature (°F)': vital.temperature,
+                                'SpO2 (%)': vital.spo2,
                                 'Vital Notes': vital.vitalsNotes || '',
                                 'Vital Recorded Date': new Date(vital.recordedDate).toLocaleString()
                             });
@@ -870,8 +887,9 @@
                         'Doctor': patient.doctor,
                         'Total Vital Records': patientVitals.length,
                         'Latest BP': latestVital ? `${latestVital.systolic}/${latestVital.diastolic}` : 'No records',
-                        'Latest Sugar': latestVital ? `${latestVital.sugar} mg/dL` : 'No records',
-                        'Latest Pulse': latestVital ? `${latestVital.pulse} bpm` : 'No records',
+                        'Latest HR': latestVital ? `${latestVital.heartRate} bpm` : 'No records',
+                        'Latest Temp': latestVital ? `${latestVital.temperature} °F` : 'No records',
+                        'Latest SpO2': latestVital ? `${latestVital.spo2}%` : 'No records',
                         'Last Checkup': latestVital ? new Date(latestVital.recordedDate).toLocaleDateString() : 'Never',
                         'Allergies': patient.allergies || 'None'
                     };
@@ -891,7 +909,7 @@
                     'Medical History', 'Medications', 'Allergies', 'Emergency Contact Name',
                     'Emergency Contact Phone', 'Pregnancy Details', 'Notes', 'Registration Date',
                     'Vital Date', 'Vital Time', 'Blood Pressure', 'Systolic BP', 'Diastolic BP', 
-                    'Blood Sugar (mg/dL)', 'Pulse Rate (bpm)', 'Vital Notes', 'Vital Recorded Date'
+                    'Heart Rate (bpm)', 'Temperature (°F)', 'SpO2 (%)', 'Vital Notes', 'Vital Recorded Date'
                 ];
                 
                 let csv = headers.join(',') + '\n';
@@ -927,7 +945,7 @@
                             escapeCSV(patient.pregnancyDetails || ''),
                             escapeCSV(patient.notes || ''),
                             escapeCSV(new Date(patient.registrationDate).toLocaleString()),
-                            '', '', '', '', '', '', '', '', ''
+                            '', '', '', '', '', '', '', '', '', ''
                         ].join(',') + '\n';
                     } else {
                         // Patient with vitals - one row per vital record
@@ -944,75 +962,76 @@
                                 escapeCSV(patient.medications || ''),
                                 escapeCSV(patient.allergies || ''),
                                 escapeCSV(patient.emergencyName),
-                            patient.emergencyPhone,
-                            escapeCSV(patient.pregnancyDetails || ''),
-                            escapeCSV(patient.notes || ''),
-                            escapeCSV(new Date(patient.registrationDate).toLocaleString()),
-                            vital.date,
-                            vital.time,
-                            `${vital.systolic}/${vital.diastolic}`,
-                            vital.systolic,
-                            vital.diastolic,
-                            vital.sugar,
-                            vital.pulse,
-                            escapeCSV(vital.vitalsNotes || ''),
-                            escapeCSV(new Date(vital.recordedDate).toLocaleString())
-                        ].join(',') + '\n';
-                    });
-                }
-            });
-            
-            return csv;
-        }
-
-        calculateAge(dob) {
-            const today = new Date();
-            const birthDate = new Date(dob);
-            let age = today.getFullYear() - birthDate.getFullYear();
-            const monthDiff = today.getMonth() - birthDate.getMonth();
-            
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                age--;
+                                patient.emergencyPhone,
+                                escapeCSV(patient.pregnancyDetails || ''),
+                                escapeCSV(patient.notes || ''),
+                                escapeCSV(new Date(patient.registrationDate).toLocaleString()),
+                                vital.date,
+                                vital.time,
+                                `${vital.systolic}/${vital.diastolic}`,
+                                vital.systolic,
+                                vital.diastolic,
+                                vital.heartRate,
+                                vital.temperature,
+                                vital.spo2,
+                                escapeCSV(vital.vitalsNotes || ''),
+                                escapeCSV(new Date(vital.recordedDate).toLocaleString())
+                            ].join(',') + '\n';
+                        });
+                    }
+                });
+                
+                return csv;
             }
-            
-            return age;
-        }
 
-        downloadFile(content, filename, mimeType) {
-            const blob = new Blob([content], { type: mimeType });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-        }
+            calculateAge(dob) {
+                const today = new Date();
+                const birthDate = new Date(dob);
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const monthDiff = today.getMonth() - birthDate.getMonth();
+                
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+                
+                return age;
+            }
 
-        showSuccessMessage(message) {
-            const successDiv = document.createElement('div');
-            successDiv.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 fade-in';
-            successDiv.innerHTML = `
-                <div class="flex items-center space-x-2">
-                    <i class="fas fa-check-circle"></i>
-                    <span>${message}</span>
-                </div>
-            `;
-            
-            document.body.appendChild(successDiv);
-            
-            setTimeout(() => {
-                successDiv.classList.add('fade-out');
+            downloadFile(content, filename, mimeType) {
+                const blob = new Blob([content], { type: mimeType });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }
+
+            showSuccessMessage(message) {
+                const successDiv = document.createElement('div');
+                successDiv.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 fade-in';
+                successDiv.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-check-circle"></i>
+                        <span>${message}</span>
+                    </div>
+                `;
+                
+                document.body.appendChild(successDiv);
+                
                 setTimeout(() => {
-                    successDiv.remove();
-                }, 300);
-            }, 3000);
+                    successDiv.classList.add('fade-out');
+                    setTimeout(() => {
+                        successDiv.remove();
+                    }, 300);
+                }, 3000);
+            }
         }
-    }
 
-    // Initialize the system
-    const patientSystem = new PatientManagementSystem();
+        // Initialize the system
+        const patientSystem = new PatientManagementSystem();
     </script>
 </body>
 </html>
